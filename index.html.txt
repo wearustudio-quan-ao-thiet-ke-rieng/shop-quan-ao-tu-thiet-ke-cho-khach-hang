@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WEARU.STUDIO — Tự thiết kế áo 3D</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- Background effects -->
+<div class="bg-orbs">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+<div class="grid-overlay"></div>
+
+<!-- ============ HEADER ============ -->
+<header class="header" id="header">
+  <a href="#" class="logo" onclick="showPage('about'); return false;">
+    <em>WEARU</em><span>.STUDIO</span>
+  </a>
+  <nav class="nav">
+    <a href="#" data-page="about" onclick="showPage('about'); return false;">Giới thiệu</a>
+    <a href="#" data-page="design" onclick="showPage('design'); return false;">Tự thiết kế</a>
+    <a href="#" data-page="samples" onclick="showPage('samples'); return false;">Mẫu shop</a>
+    <a href="#" data-page="lookbook" onclick="showPage('lookbook'); return false;">Lookbook</a>
+    <a href="#" data-page="faq" onclick="showPage('faq'); return false;">FAQ</a>
+    <a href="#" data-page="track" onclick="showPage('track'); return false;">Đơn hàng</a>
+    <a href="#" data-page="contact" onclick="showPage('contact'); return false;">Liên hệ</a>
+    <div id="authArea">
+      <a href="#" class="login-btn" onclick="openModal(); return false;">Đăng nhập</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ============ MAIN ============ -->
+<main class="container">
+
+  <!-- ===== TRANG GIỚI THIỆU (HERO 3D) ===== -->
+  <section id="about" class="page active">
+    <div class="hero">
+      <div class="hero-text">
+        <div class="badge red" style="margin-bottom: 1.2rem;">Bộ sưu tập mới 2025</div>
+        <h1>Mặc cá tính<br><span class="accent">In dấu riêng bạn</span></h1>
+        <p>Tự thiết kế áo với công cụ 3D trực quan. Chọn font, icon, hoặc để AI gợi ý — chỉ từ <strong style="color: var(--red-accent);">149K</strong> đến <strong style="color: var(--red-accent);">349K</strong>.</p>
+        <div class="hero-cta">
+          <button class="btn" onclick="showPage('design')"><span>Thiết kế ngay</span></button>
+          <button class="btn btn-outline" onclick="showPage('samples')"><span>Xem mẫu shop</span></button>
+        </div>
+      </div>
+      <div class="hero-3d" id="heroStage">
+        <div class="shirt-3d" id="heroShirt">
+          <!-- Áo thun trơn (tô màu bằng ảnh áo thật), chữ sẽ bung ra từ đây -->
+          <div class="shirt-wrapper">
+            <div class="tee-pulse">
+              <div class="shirt-photo">
+                <div class="shirt-color" id="heroTeeColor" style="background:#0a5c9e"></div>
+                <div class="shirt-shade" id="heroTeeShade"></div>
+              </div>
+            </div>
+          </div>
+                  <!-- Chữ bung ra từ áo: nằm CHUNG khối 3D với áo nên xoay cùng áo -->
+          <div class="burst-ring"></div>
+          <div class="burst-ring r2"></div>
+          <div class="burst-word w1">Thiết Kế Do Bạn</div>
+          <div class="burst-word w2">Phong Cách Mới</div>
+          <div class="burst-word w3">Chất Riêng</div>
+          <div class="burst-word w4">In Dấu Cá Tính</div>
+          <div class="burst-word w5">Sáng Tạo Không Giới Hạn</div>
+          <div class="burst-word w6">Từ 149K</div>
+        </div>
+        <div class="shirt-shadow"></div>
+      </div>
+    </div>
+
+    <div class="stats-row">
+      <div class="stat-item">
+        <div class="stat-number">3D</div>
+        <div class="stat-label">Xem trước áo xoay 360° trước khi đặt</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">1 đổi 1</div>
+        <div class="stat-label">Trong 7 ngày nếu lỗi từ nhà sản xuất</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">-10%</div>
+        <div class="stat-label">Đơn từ 5 áo, miễn phí thiết kế</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number">Toàn quốc</div>
+        <div class="stat-label">Bán online 24/7, giao hàng tận nơi</div>
+      </div>
+    </div>
+
+    <h2 class="section-title-center">WEARU.STUDIO — Sáng tạo không giới hạn</h2>
+
+    <h2>Dịch vụ của WEARU.STUDIO</h2>
+    <div class="service-grid">
+      <div class="service-card" onclick="showPage('design')">
+        <img data-service="service1" alt="Thiết kế áo thun &amp; polo">
+        <h3>Thiết Kế Áo Thun &amp; Polo</h3>
+      </div>
+      <div class="service-card" onclick="showPage('contact')">
+        <img data-service="service2" alt="Bộ sưu tập nhóm, lớp">
+        <h3>Bộ Sưu Tập Nhóm/Lớp</h3>
+      </div>
+      <div class="service-card" onclick="showPage('contact')">
+        <img data-service="service3" alt="Quà tặng doanh nghiệp">
+        <h3>Quà Tặng Doanh Nghiệp</h3>
+      </div>
+      <div class="service-card" onclick="showPage('samples')">
+        <img data-service="service4" alt="Mẫu shop có sẵn">
+        <h3>Mẫu Shop Có Sẵn</h3>
+      </div>
+    </div>
+
+    <div class="process-quality" style="margin-top: 3rem;">
+      <div class="process-box">
+        <h2>Quy trình đơn giản</h2>
+        <div class="process-steps">
+          <div class="process-step"><div class="step-num">1</div><p>Chọn phom áo và màu sắc.</p></div>
+          <div class="process-step"><div class="step-num">2</div><p>Tự do sáng tạo với công cụ 3D.</p></div>
+          <div class="process-step"><div class="step-num">3</div><p>Thêm chữ, hình in theo ý muốn.</p></div>
+          <div class="process-step"><div class="step-num">4</div><p>Kiểm tra, đặt hàng và nhận.</p></div>
+        </div>
+      </div>
+      <div class="quality-box">
+        <h2>Chất lượng cam kết</h2>
+        <ul class="quality-list">
+          <li><span>🧵</span> Vải sợi tự nhiên, thoáng mát</li>
+          <li><span>🎨</span> Mực in cao cấp, bền màu (in kỹ thuật số)</li>
+          <li><span>✂️</span> Form dáng đa dạng, chuẩn size.</li>
+          <li><span>🚚</span> Giao hàng nhanh toàn quốc.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h2>Vì sao chọn WEARU.STUDIO?</h2>
+    <div class="grid-4">
+      <div class="card">
+        <h3>Thiết kế 3D</h3>
+        <p>Xem trước áo trong không gian 3D xoay 360°, cảm nhận chân thực trước khi đặt.</p>
+      </div>
+      <div class="card">
+        <h3>AI gợi ý</h3>
+        <p>Không biết bắt đầu từ đâu? AI sẽ tạo mẫu thiết kế độc đáo riêng cho bạn.</p>
+      </div>
+      <div class="card">
+        <h3>Tích điểm</h3>
+        <p>Thành viên nhận điểm mỗi đơn. Đổi voucher, quà tặng hấp dẫn.</p>
+      </div>
+      <div class="card">
+        <h3>Chất lượng</h3>
+        <p>Cotton 100% mềm mịn, in bền màu, form chuẩn, bảo hành 1 đổi 1.</p>
+      </div>
+    </div>
+
+    <div style="margin-top: 3rem; background: linear-gradient(135deg, var(--blue-deep), var(--blue-ocean)); border-radius: 24px; padding: 2.5rem; color: white; display: flex; flex-wrap: wrap; gap: 2rem; align-items: center; justify-content: space-between; box-shadow: var(--shadow-lg);">
+      <div>
+        <h2 style="color: white; margin-top: 0;">✨ Ưu đãi thành viên mới</h2>
+        <p style="opacity: 0.9; font-size: 1.05rem;">Giảm 10% đơn đầu tiên + Miễn phí thiết kế cho đơn từ 5 áo.</p>
+      </div>
+      <button class="btn btn-red" onclick="openModal()"><span>Đăng ký ngay</span></button>
+    </div>
+  </section>
+
+  <!-- ===== TRANG TỰ THIẾT KẾ 3D ===== -->
+  <section id="design" class="page">
+    <h1>Tự thiết kế áo <span class="accent">3D</span></h1>
+    <p class="subhead">Xoay áo 360°, chọn font, icon hoặc nhờ AI. Giá từ 149K – 349K.</p>
+
+    <div class="design-layout">
+      <div class="design-panel">
+
+        <!-- CHỌN KIỂU ÁO -->
+        <div class="form-group">
+          <label>Chọn kiểu áo</label>
+          <div class="style-picker" id="stylePicker">
+            <div class="style-option selected" data-style="tshirt">
+              Áo thun
+            </div>
+            <div class="style-option" data-style="longsleeve">
+              Tay dài
+            </div>
+            <div class="style-option" data-style="hoodie">
+              Hoodie
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Nội dung in (tối đa 20 ký tự)</label>
+          <input type="text" id="customText" placeholder="VD: WEARU.STUDIO" maxlength="20" value="WEARU">
+        </div>
+        <div class="form-group">
+          <label>Font chữ</label>
+          <select id="fontSelect">
+            <option value="'Space Grotesk', sans-serif">Space Grotesk (hiện đại)</option>
+            <option value="Inter, sans-serif">Inter (tối giản)</option>
+            <option value="Arial, sans-serif">Arial (cơ bản)</option>
+            <option value="'Courier New', monospace">Courier (cổ điển)</option>
+            <option value="Georgia, serif">Georgia (thanh lịch)</option>
+            <option value="'Brush Script MT', cursive">Brush Script (nghệ thuật)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Màu áo</label>
+          <select id="colorSelect">
+            <option value="#f4f7fb">Trắng tinh</option>
+            <option value="#0a5c9e" selected>Xanh biển</option>
+            <option value="#0a3d73">Xanh biển đậm</option>
+            <option value="#1c8ad8">Xanh biển sáng</option>
+            <option value="#d62839">Đỏ</option>
+            <option value="#1f1f1f">Đen than</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-small" onclick="updateLivePreview()"><span>Cập nhật</span></button>
+          <button class="btn btn-small btn-red" onclick="aiDesign()"><span>AI gợi ý</span></button>
+        </div>
+      </div>
+
+      <div class="preview-stage">
+        <div class="live-shirt" id="liveShirt">
+          <div class="shirt-wrapper">
+            <!-- Ảnh áo thật: lớp màu (mask) + lớp bóng vải. Ảnh được nạp trong JS bên dưới (renderShirt) -->
+            <div class="shirt-photo">
+              <div class="shirt-color" id="shirtColor"></div>
+              <div class="shirt-shade" id="shirtShade"></div>
+            </div>
+          </div>
+
+          <!-- Nội dung in - KÉO THẢ TỰ DO -->
+          <div class="print-area" id="printArea">
+            
+            <div class="print-text" id="liveText" style="font-family: 'Space Grotesk', sans-serif; color: #ffffff; font-size: 2rem;">WEARU</div>
+          </div>
+        </div>
+
+        <!-- Thanh trượt điều khiển kích thước -->
+        <div class="size-control">
+          <label>Cỡ chữ</label>
+          <input type="range" id="sizeSlider" min="0.5" max="3.5" step="0.1" value="2" oninput="changeTextSize(this.value)">
+        </div>
+
+        <div class="price-tag-live" id="livePrice">249.000đ</div>
+      </div>
+    </div>
+
+    <div style="background: rgba(28, 138, 216, 0.08); border-radius: 18px; padding: 1.5rem; display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: space-between; align-items: center; border: 1px solid rgba(28, 138, 216, 0.2);">
+      <div><strong>Cần thiết kế cho nhóm?</strong> Để lại SĐT, shop liên hệ tư vấn miễn phí.</div>
+      <button class="btn btn-red btn-small" onclick="showPage('contact')"><span>Liên hệ ngay</span></button>
+    </div>
+  </section>
+
+  <!-- ===== TRANG MẪU SHOP ===== -->
+  <section id="samples" class="page">
+    <h1>Mẫu áo <span class="accent">có sẵn</span></h1>
+    <p class="subhead">Chọn theo từng loại áo. Thích mẫu nào cũng có thể bấm vào để chỉnh lại theo ý bạn ở trang Tự thiết kế.</p>
+
+    <div class="shop-tabs" id="shopTabs">
+      <button class="shop-tab active" data-cat="all">Tất cả</button>
+      <button class="shop-tab" data-cat="tshirt">Áo thun</button>
+      <button class="shop-tab" data-cat="longsleeve">Áo tay dài</button>
+      <button class="shop-tab" data-cat="hoodie">Hoodie</button>
+    </div>
+
+    <div id="shopGrid"></div>
+  </section>
+
+  <!-- ===== TRANG CHI TIẾT SẢN PHẨM ===== -->
+  <section id="product" class="page">
+    <a href="#" class="back-link" onclick="showPage('samples'); return false;">← Quay lại mẫu shop</a>
+    <div id="productDetail"></div>
+  </section>
+
+  <!-- ===== TRANG LOOKBOOK ===== -->
+  <section id="lookbook" class="page">
+    <h1>Lookbook <span class="accent">WEARU</span></h1>
+    <p class="subhead">Hình ảnh thật từ WEARU.STUDIO. Bấm vào ảnh để xem chi tiết hoặc đặt hàng.</p>
+
+    <div class="grid-3" id="lookbookGrid"></div>
+
+    <h2 class="mt-2">Đặt số lượng lớn</h2>
+    <div class="card" style="display: flex; flex-wrap: wrap; gap: 2rem; justify-content: space-between; align-items: center;">
+      <div>
+        <h3>Đặt áo nhóm, CLB, công ty</h3>
+        <p>Thiết kế theo yêu cầu, in logo số lượng lớn. Giá chỉ từ 149K/áo. Tư vấn miễn phí.</p>
+      </div>
+      <button class="btn btn-red" onclick="showPage('contact')"><span>Yêu cầu báo giá</span></button>
+    </div>
+  </section>
+
+
+  <!-- ===== TRANG FAQ ===== -->
+  <section id="faq" class="page">
+    <h1>Câu hỏi <span class="accent">thường gặp</span></h1>
+    <p class="subhead">Giải đáp mọi thắc mắc của bạn về sản phẩm và dịch vụ</p>
+
+    <div style="max-width: 800px;">
+      <div class="faq-item open">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Giá áo thiết kế bao nhiêu?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Giá dao động từ 149K đến 349K tùy mẫu áo và độ phức tạp của thiết kế. Áo basic từ 149K, áo có thiết kế phức tạp hoặc phiên bản giới hạn lên đến 349K.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Thời gian giao hàng bao lâu?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Đơn hàng có sẵn: 1-2 ngày làm việc. Đơn thiết kế riêng: 3-5 ngày làm việc (chưa tính thời gian vận chuyển). Giao toàn quốc.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Có được đổi trả không?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Có! WEARU bảo hành 1 đổi 1 trong 7 ngày nếu lỗi từ nhà sản xuất (in lỗi, đường may lỗi, sai size). Vui lòng giữ nguyên tem mác.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Tích điểm như thế nào?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Đăng nhập tài khoản, mỗi đơn hàng nhận điểm tương ứng giá trị. Điểm dùng để đổi voucher giảm giá hoặc quà tặng. Tích càng nhiều, ưu đãi càng lớn.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Đặt áo nhóm có ưu đãi gì?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Đơn từ 5 áo: giảm 10% + miễn phí thiết kế. Đơn từ 20 áo: giảm 15% + tặng kèm quà. Liên hệ hotline để được báo giá chi tiết.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)"><span>Tôi có thể tự thiết kế trên web không?</span><span class="faq-plus">+</span></div>
+        <div class="faq-a">Hoàn toàn được! Vào trang "Tự thiết kế", chọn font, nhập nội dung, thêm icon và xem trước áo 3D. Hoặc nhấn "AI gợi ý" để được tạo mẫu tự động.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRANG TRACK ORDER ===== -->
+  <section id="track" class="page">
+    <h1>Kiểm tra <span class="accent">đơn hàng</span></h1>
+    <p class="subhead">Nhập mã đơn hàng để xem trạng thái vận chuyển</p>
+
+    <div class="track-box">
+      <div class="form-group">
+        <label>Mã đơn hàng</label>
+        <input type="text" id="orderCode" placeholder="VD: WRU12345">
+      </div>
+      <button class="btn" style="width: 100%; justify-content: center;" onclick="trackOrder()"><span>Tra cứu</span></button>
+
+      <p id="trackResult" style="margin-top: 1.2rem; font-weight: 600; color: var(--blue-ocean);"></p>
+      <p style="margin-top: 0.8rem; font-size: 0.82rem; color: #7a95ad;">Mã đơn được lưu trên thiết bị bạn đã đặt hàng. Cần hỗ trợ thêm, liên hệ shop qua SĐT 0908 048 037.</p>
+
+      <div class="track-steps" id="trackSteps" style="display: none;">
+        <div class="track-step current">
+          <div class="track-dot">1</div>
+          <div class="track-info"><h4>Đã tiếp nhận</h4><p>Đơn đã ghi nhận trên website, shop sẽ liên hệ xác nhận</p></div>
+        </div>
+        <div class="track-step">
+          <div class="track-dot">2</div>
+          <div class="track-info"><h4>Xác nhận &amp; sản xuất</h4><p>Shop xác nhận đơn, áo được in và hoàn thiện</p></div>
+        </div>
+        <div class="track-step">
+          <div class="track-dot">3</div>
+          <div class="track-info"><h4>Đang giao hàng</h4><p>Đơn vị vận chuyển đang giao đến bạn</p></div>
+        </div>
+        <div class="track-step">
+          <div class="track-dot">4</div>
+          <div class="track-info"><h4>Đã giao</h4><p>Hoàn tất — Cảm ơn bạn!</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== TRANG LIÊN HỆ ===== -->
+  <section id="contact" class="page">
+    <h1>Liên hệ <span class="accent">WEARU</span></h1>
+    <p class="subhead">Để lại SĐT, shop sẽ gọi lại tư vấn trong 15 phút</p>
+
+    <div class="contact-grid">
+      <div class="design-panel">
+        <h3 style="margin-bottom: 1.2rem;">Gửi yêu cầu tư vấn</h3>
+        <div class="form-group">
+          <label>Họ tên</label>
+          <input type="text" id="contactName" placeholder="Nguyễn Văn A">
+        </div>
+        <div class="form-group">
+          <label>Số điện thoại <span style="color: var(--red-accent);">*</span></label>
+          <input type="tel" id="contactPhone" placeholder="0912 345 678">
+        </div>
+        <div class="form-group">
+          <label>Loại yêu cầu</label>
+          <select id="contactType">
+            <option>Thiết kế áo cá nhân</option>
+            <option>Thiết kế áo nhóm / CLB</option>
+            <option>Quà tặng doanh nghiệp</option>
+            <option>Tư vấn size & chất liệu</option>
+            <option>Khác</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Nội dung</label>
+          <textarea id="contactNote" rows="3" placeholder="VD: Cần thiết kế 20 áo cho CLB, in logo..."></textarea>
+        </div>
+        <button class="btn btn-red" style="width: 100%; justify-content: center;" onclick="submitContact()"><span>Gửi yêu cầu</span></button>
+        <p id="contactMsg" style="margin-top: 12px; color: var(--blue-ocean); font-weight: 600;"></p>
+      </div>
+
+      <div>
+        <div class="info-item">
+          <div><h4>Địa chỉ</h4><p>Đường số 24, Phường Bình Phú, Quận 6, TP.HCM</p></div>
+        </div>
+        <div class="info-item">
+          <div><h4>Giờ mở cửa</h4><p>Bán online 24/7 · Giờ mở cửa hàng: sẽ thông báo sau</p></div>
+        </div>
+        <div class="info-item">
+          <div><h4>Hotline</h4><p>0908 048 037</p></div>
+        </div>
+        <div class="info-item">
+          <div><h4>Email</h4><p>wearu.studio@gmail.com</p></div>
+        </div>
+        <div class="info-item">
+          <div><h4>Mạng xã hội</h4><p><a href="https://www.instagram.com/wearu.studio" target="_blank" rel="noopener" style="color: var(--blue-ocean); font-weight: 600;">Instagram @wearu.studio</a><br><span class="soon" style="padding:0">TikTok và Shopee: sắp mở</span></p></div>
+        </div>
+        <div class="info-item" style="background: linear-gradient(135deg, rgba(214, 40, 57,0.1), rgba(28, 138, 216,0.1));">
+          <div><h4>Thiết kế cho nhóm từ 5 áo</h4><p>Giảm 10% + miễn phí thiết kế</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ FOOTER ============ -->
+<footer class="footer">
+  <div class="footer-content">
+    <div>
+      <div class="logo-footer">WEARU.STUDIO</div>
+      <p style="font-size: 0.9rem; opacity: 0.8; margin-top: 0.5rem;">Tự thiết kế – Chất riêng – Giá tốt</p>
+      <div style="display: flex; gap: 1rem; margin-top: 1rem; flex-wrap: wrap;">
+        <a href="https://www.instagram.com/wearu.studio" target="_blank" rel="noopener" style="display: inline-flex;">Instagram</a>
+        <span class="soon">TikTok · sắp mở</span>
+        <span class="soon">Shopee · sắp mở</span>
+      </div>
+    </div>
+    <div>
+      <h4>Sản phẩm</h4>
+      <a href="#" onclick="showPage('samples'); return false;">Mẫu có sẵn</a>
+      <a href="#" onclick="showPage('design'); return false;">Tự thiết kế</a>
+      <a href="#" onclick="showPage('lookbook'); return false;">Lookbook</a>
+    </div>
+    <div>
+      <h4>Hỗ trợ</h4>
+      <a href="#" onclick="showPage('faq'); return false;">FAQ</a>
+      <a href="#" onclick="showPage('track'); return false;">Kiểm tra đơn</a>
+      <a href="#" onclick="showPage('contact'); return false;">Liên hệ</a>
+    </div>
+    <div>
+      <h4>Liên hệ</h4>
+      <a href="tel:0908048037">0908 048 037</a>
+      <a href="mailto:wearu.studio@gmail.com">wearu.studio@gmail.com</a>
+      <a href="#">Q.6, TP.HCM</a>
+    </div>
+  </div>
+  <div class="footer-bottom">© 2025 WEARU.STUDIO. All rights reserved. Made with 💙 in Vietnam.</div>
+</footer>
+
+<!-- ============ MODAL ĐĂNG NHẬP ============ -->
+<div class="modal" id="loginModal">
+  <div class="modal-box">
+    <span class="close-modal" onclick="closeModal()">&times;</span>
+    <h2>Đăng nhập</h2>
+    <p style="color: #7a95ad; font-size: 0.9rem; margin-bottom: 1.5rem;">Đăng nhập để tích điểm và nhận ưu đãi</p>
+    <div class="form-group">
+      <label>Số điện thoại</label>
+      <input type="tel" id="loginPhone" placeholder="0912 345 678">
+    </div>
+    <div class="form-group">
+      <label>Mật khẩu</label>
+      <input type="password" id="loginPass" placeholder="••••••">
+    </div>
+    <button class="btn" style="width: 100%; justify-content: center;" onclick="login()"><span>Đăng nhập</span></button>
+    <p style="text-align: center; margin-top: 1.2rem; font-size: 0.9rem; color: #7a95ad;">Chưa có tài khoản? <a href="#" onclick="alert('Vui lòng để lại SĐT ở trang Liên hệ để được hỗ trợ đăng ký!'); return false;" style="color: var(--red-accent); font-weight: 600;">Đăng ký ngay</a></p>
+    <p style="text-align: center; font-size: 0.78rem; color: #a8bccf; margin-top: 0.5rem;">(Demo: nhập bất kỳ SĐT & mật khẩu)</p>
+  </div>
+</div>
+
+
+<script src="js/main.js"></script>
+</body>
+</html>
