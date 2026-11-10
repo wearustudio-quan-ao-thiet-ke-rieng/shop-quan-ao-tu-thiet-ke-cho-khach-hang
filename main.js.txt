@@ -1,0 +1,686 @@
+/* ============ ĐƯỜNG DẪN ẢNH ============
+   Muốn đổi ảnh: thay file trong thư mục images/ (giữ nguyên tên) hoặc sửa đường dẫn ở đây. */
+const SAMPLE_IMAGES = {
+  tshirt:     'images/products/work-in-silence.png',
+  longsleeve: 'images/products/stay-true.png',
+  hoodie:     'images/products/hoodie-stripe.png',
+  tee2_back:  'images/products/lucky-walk-back.png',
+  tee2_front: 'images/products/lucky-walk-front.png'
+};
+const SERVICE_IMAGES = {
+  service1: 'images/services/Hinh_1_Ao_Thun_Polo.jpg',
+  service2: 'images/services/Hinh_2_Group_Style.jpg',
+  service3: 'images/services/Hinh_3_Doanh_Nghiep.jpg',
+  service4: 'images/services/Hinh_4_Mau_Shop_Grid.jpg'
+};
+
+/* ============ ÁO TRƠN ĐỂ TÔ MÀU (trang Tự thiết kế) ============
+   3 ảnh áo trơn màu ĐEN, nền trắng. Code tự tách hình dáng áo + nếp vải
+   rồi tô màu theo lựa chọn của khách. Cần chạy qua web (GitHub Pages). */
+const SHIRT_SOURCES = {
+  tshirt:     { src: 'images/shirts/tshirt-plain.png',     k: 4 },
+  longsleeve: { src: 'images/shirts/longsleeve-plain.png', k: 4 },
+  hoodie:     { src: 'images/shirts/hoodie-plain.png',     k: 2.2 }
+};
+const SHIRT_IMAGES = {};
+
+function buildShirtMask(src, k) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const W = 800, H = Math.round(img.height * W / img.width);
+        const c = document.createElement('canvas'); c.width = W; c.height = H;
+        const x = c.getContext('2d');
+        x.fillStyle = '#ffffff'; x.fillRect(0, 0, W, H);
+        x.drawImage(img, 0, 0, W, H);
+        const d = x.getImageData(0, 0, W, H), px = d.data, n = W * H;
+        const L = new Float32Array(n);
+        let sum = 0, cnt = 0;
+        for (let i = 0; i < n; i++) {
+          const l = (px[i * 4] + px[i * 4 + 1] + px[i * 4 + 2]) / 3;
+          L[i] = l;
+          if (l < 60) { sum += l; cnt++; }
+        }
+        const mean = cnt ? sum / cnt : 10;
+        for (let i = 0; i < n; i++) {
+          const a = Math.min(1, Math.max(0, (250 - L[i]) / 40));          // hình dáng áo
+          const s = Math.min(255, Math.max(120, 238 + (L[i] - mean) * k)); // nếp vải
+          const v = a > 0.5 ? s : 238;
+          px[i * 4] = px[i * 4 + 1] = px[i * 4 + 2] = v;
+          px[i * 4 + 3] = a * 255;
+        }
+        x.putImageData(d, 0, 0);
+        resolve(c.toDataURL('image/png'));
+      } catch (e) { resolve(src); }
+    };
+    img.onerror = () => resolve(src);
+    img.src = src;
+  });
+}
+const shirtsReady = Promise.all(Object.entries(SHIRT_SOURCES).map(
+  ([key, v]) => buildShirtMask(v.src, v.k).then(url => { SHIRT_IMAGES[key] = url; })
+));
+
+/* ============ STATE ============ */
+let currentUser = null;
+let points = 0;
+let selectedIcon = 'fa-star';
+let currentStyle = 'tshirt'; // tshirt, longsleeve, hoodie
+
+/* ============ ẢNH ÁO THEO KIỂU ============ */
+// Vị trí chữ mặc định (tính từ trên xuống) cho từng kiểu áo
+const PRINT_TOP = { tshirt: '30%', longsleeve: '30%', hoodie: '52%' };
+
+function renderShirt(style) {
+  const img = 'url(' + (SHIRT_IMAGES[style] || SHIRT_IMAGES.tshirt) + ')';
+
+  // Lớp màu: tô màu theo hình dáng áo
+  const colorLayer = document.getElementById('shirtColor');
+  colorLayer.style.webkitMaskImage = img;
+  colorLayer.style.maskImage = img;
+  colorLayer.style.background = document.getElementById('colorSelect').value;
+
+  // Lớp bóng: giữ nếp vải, đường may, viền cổ tay
+  document.getElementById('shirtShade').style.backgroundImage = img;
+
+  // Đưa chữ về vùng ngực phù hợp với kiểu áo
+  const pa = document.getElementById('printArea');
+  pa.style.left = '50%';
+  pa.style.top = PRINT_TOP[style] || '30%';
+  pa.style.transform = 'translate(-50%, -50%)';
+}
+
+/* ============ MẪU SHOP: DANH SÁCH SẢN PHẨM ============ */
+// Muốn thêm mẫu mới: thêm 1 dòng vào PRODUCTS (cat = tshirt / longsleeve / hoodie)
+const CATEGORIES = {
+  tshirt:     { label: 'Áo thun',    from: '149K' },
+  longsleeve: { label: 'Áo tay dài', from: '199K' },
+  hoodie:     { label: 'Hoodie',     from: '249K' }
+};
+const PRODUCTS = [
+  { cat: 'tshirt',     name: 'Work In Silence',   desc: 'Áo thun đen, in chữ và họa tiết núi rừng',        price: '149K', img: 'tshirt' },
+  { cat: 'tshirt',     name: 'Lucky Walk',        desc: 'Áo thun đen, in nhân vật hoạt hình mặt lưng, logo nhỏ mặt trước', price: '199K', img: 'tee2_back', img2: 'tee2_front' },
+  { cat: 'longsleeve', name: 'Stay True',         desc: 'Áo tay dài đen, trăng khuyết nhỏ trước ngực',     price: '199K', img: 'longsleeve' },
+  { cat: 'hoodie',     name: 'Hoodie Sọc Trắng',  desc: 'Hoodie đen, sọc trắng hai bên tay và viền mũ',    price: '249K', img: 'hoodie' }
+];
+let shopCat = 'all';
+
+function openDesign(style) {
+  currentStyle = style;
+  document.querySelectorAll('.style-option').forEach(o => o.classList.toggle('selected', o.dataset.style === style));
+  renderShirt(style);
+  updateLivePreview();
+  showPage('design');
+}
+
+function renderShop() {
+  const grid = document.getElementById('shopGrid');
+  const cats = shopCat === 'all' ? Object.keys(CATEGORIES) : [shopCat];
+  grid.innerHTML = cats.map(cat => {
+    const items = PRODUCTS.filter(p => p.cat === cat).map(p => `
+      <div class="card shirt-card" onclick="openProduct(${PRODUCTS.indexOf(p)})">
+        <div class="sample-img-wrap${p.img2 ? ' two-sides' : ''}">
+          <img class="sample-img" src="${SAMPLE_IMAGES[p.img]}" alt="${p.name}">
+          ${p.img2 ? `<img class="sample-img alt" src="${SAMPLE_IMAGES[p.img2]}" alt="${p.name} - mặt còn lại"><span class="two-sides-hint">Rê chuột xem mặt trước</span>` : ''}
+        </div>
+        <h3>${p.name}</h3>
+        <p>${p.desc}</p>
+        <div class="price">${p.price}</div>
+      </div>`).join('');
+    const own = `
+      <div class="card shirt-card design-your-own" onclick="openDesign('${cat}')">
+        <div class="sample-img plain-preview" data-plain="${cat}"><div class="shirt-photo"><div class="shirt-color" style="background:#0a5c9e"></div><div class="shirt-shade"></div></div></div>
+        <h3>Tự thiết kế ${CATEGORIES[cat].label.toLowerCase()}</h3>
+        <p>Chọn màu, chữ và vị trí in theo ý bạn</p>
+        <div class="price"><small>Từ</small> ${CATEGORIES[cat].from}</div>
+      </div>`;
+    return `
+      <div class="shop-group">
+        <div class="shop-group-title"><h2>${CATEGORIES[cat].label}</h2><span>${PRODUCTS.filter(p => p.cat === cat).length} mẫu có sẵn</span></div>
+        <div class="grid-3">${items}${own}</div>
+      </div>`;
+  }).join('');
+
+  // Ảnh áo trơn (tô màu bằng ảnh áo thật) cho ô "Tự thiết kế"
+  grid.querySelectorAll('[data-plain]').forEach(box => {
+    const img = 'url(' + SHIRT_IMAGES[box.dataset.plain] + ')';
+    const c = box.querySelector('.shirt-color');
+    c.style.webkitMaskImage = img; c.style.maskImage = img;
+    box.querySelector('.shirt-shade').style.backgroundImage = img;
+  });
+
+  document.querySelectorAll('.shop-tab').forEach(t => t.classList.toggle('active', t.dataset.cat === shopCat));
+}
+
+document.querySelectorAll('.shop-tab').forEach(t => {
+  t.addEventListener('click', () => { shopCat = t.dataset.cat; renderShop(); });
+});
+
+/* ============ CẤU HÌNH ĐẶT HÀNG ============ */
+const ORDER_EMAIL = 'wearu.studio@gmail.com';
+// Để đơn hàng tự gửi thẳng về email shop: tạo form miễn phí tại formspree.io,
+// rồi dán link dạng https://formspree.io/f/xxxxxxxx vào dòng dưới.
+// Nếu để trống, sau khi khách đặt sẽ hiện nút "Gửi đơn qua Gmail" để gửi đơn.
+const ORDER_ENDPOINT = '';
+const INSTAGRAM_URL = 'https://www.instagram.com/wearu.studio';
+
+/* ============ TRANG CHI TIẾT SẢN PHẨM ============ */
+const SIZES = ['S', 'M', 'L', 'XL'];
+const INTRO = {
+  tshirt:     'Áo thun cổ tròn gọn gàng, mặc đi học, đi làm hay đi chơi đều hợp. Vải cotton mềm mịn, thấm hút tốt nên mặc cả ngày vẫn thoải mái. Hình in sắc nét, bền màu qua nhiều lần giặt. Thiết kế độc quyền từ WEARU.STUDIO.',
+  longsleeve: 'Áo tay dài đơn giản, dễ phối cùng quần jeans hay kaki. Vải cotton mềm mịn, giữ ấm nhẹ mà vẫn thoáng. Phần cổ tay và thân áo được may chắc chắn, form chuẩn. Thiết kế độc quyền từ WEARU.STUDIO.',
+  hoodie:     'Hoodie có mũ trùm, dây rút và túi trước tiện lợi, hợp cho những ngày se lạnh hay đi chơi buổi tối. Vải cotton dày dặn, mềm và giữ ấm tốt. Đường may chắc chắn, mặc lâu vẫn giữ form. Thiết kế độc quyền từ WEARU.STUDIO.'
+};
+let pdProduct = null, pdSize = 'M', pdQty = 1;
+
+function priceNum(p) { return parseInt(p.price, 10) * 1000; }
+function money(n) { return n.toLocaleString('vi-VN') + 'đ'; }
+
+function openProduct(idx) {
+  pdProduct = PRODUCTS[idx]; pdSize = 'M'; pdQty = 1;
+  const p = pdProduct;
+  const imgs = [p.img].concat(p.img2 ? [p.img2] : []);
+  document.getElementById('productDetail').innerHTML = `
+    <div class="pd-layout">
+      <div>
+        <div class="pd-main-img"><img id="pdMain" src="${SAMPLE_IMAGES[imgs[0]]}" alt="${p.name}"></div>
+        ${imgs.length > 1 ? `<div class="pd-thumbs">${imgs.map((k, i) => `<button class="pd-thumb${i === 0 ? ' active' : ''}" onclick="pdPickImg('${k}', this)"><img src="${SAMPLE_IMAGES[k]}" alt=""></button>`).join('')}</div>` : ''}
+      </div>
+      <div class="pd-info">
+        <div class="pd-cat">${CATEGORIES[p.cat].label}</div>
+        <h1>${p.name}</h1>
+        <div class="pd-price">${money(priceNum(p))}</div>
+        <p style="color:#4a6a87">${p.desc}</p>
+
+        <span class="pd-label">Chọn size</span>
+        <div class="size-options" id="pdSizes">${SIZES.map(s => `<button class="size-btn${s === pdSize ? ' selected' : ''}" onclick="pdPickSize('${s}')">${s}</button>`).join('')}</div>
+        <p style="font-size:0.82rem;color:#7a95ad;margin-top:8px">Chưa chắc chọn size nào? Nhắn shop qua Instagram hoặc gọi 0908 048 037 để được tư vấn.</p>
+
+        <span class="pd-label">Số lượng</span>
+        <div class="qty-control"><button onclick="pdChangeQty(-1)">−</button><span id="pdQty">1</span><button onclick="pdChangeQty(1)">+</button></div>
+
+        <div class="pd-total">Tạm tính: <strong id="pdTotal">${money(priceNum(p))}</strong> <span style="font-size:0.82rem">(chưa gồm phí vận chuyển)</span></div>
+
+        <div class="pd-actions">
+          <button class="btn btn-red" onclick="openOrder()"><span>Đặt hàng</span></button>
+          <button class="btn btn-outline" onclick="openDesign('${p.cat}')"><span>Tùy chỉnh mẫu này</span></button>
+        </div>
+
+        <div class="pd-material">
+          <h3>Chất liệu: Cotton 100%</h3>
+          <ul>
+            <li>Mềm mịn, thấm hút mồ hôi tốt</li>
+            <li>Thoáng mát, dễ chịu khi mặc cả ngày</li>
+            <li>Mực in bền màu, form chuẩn</li>
+          </ul>
+        </div>
+        <p class="pd-intro">${INTRO[p.cat]}</p>
+      </div>
+    </div>`;
+  showPage('product');
+}
+function pdPickImg(key, btn) {
+  document.getElementById('pdMain').src = SAMPLE_IMAGES[key];
+  document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+}
+function pdPickSize(s) {
+  pdSize = s;
+  document.querySelectorAll('#pdSizes .size-btn').forEach(b => b.classList.toggle('selected', b.textContent === s));
+}
+function pdChangeQty(d) {
+  pdQty = Math.min(20, Math.max(1, pdQty + d));
+  document.getElementById('pdQty').textContent = pdQty;
+  document.getElementById('pdTotal').textContent = money(priceNum(pdProduct) * pdQty);
+}
+
+/* ============ ĐẶT HÀNG ============ */
+function getOrders() { try { return JSON.parse(localStorage.getItem('wearu_orders') || '[]'); } catch (e) { return []; } }
+function saveOrder(o) { try { const a = getOrders(); a.push(o); localStorage.setItem('wearu_orders', JSON.stringify(a)); } catch (e) {} }
+function orderText(o) {
+  return `ĐƠN HÀNG ${o.code}\nSản phẩm: ${o.product} (${o.category})\nSize: ${o.size}\nSố lượng: ${o.qty}\nTạm tính: ${money(o.total)} (chưa gồm phí vận chuyển)\n\nKhách hàng: ${o.name}\nSĐT: ${o.phone}\nĐịa chỉ giao hàng: ${o.address}\nGhi chú: ${o.note || 'Không'}`;
+}
+
+function openOrder() {
+  const p = pdProduct;
+  document.getElementById('orderBody').innerHTML = `
+    <h2>Đặt hàng</h2>
+    <div class="order-summary"><strong>${p.name}</strong> · Size <strong>${pdSize}</strong> · SL <strong>${pdQty}</strong><br>
+    Tạm tính: <strong style="color:var(--red-accent)">${money(priceNum(p) * pdQty)}</strong> (chưa gồm phí vận chuyển, thanh toán khi nhận hàng)</div>
+    <div class="form-group"><label>Họ tên <span style="color:var(--red-accent)">*</span></label><input type="text" id="odName" placeholder="Nguyễn Văn A"></div>
+    <div class="form-group"><label>Số điện thoại <span style="color:var(--red-accent)">*</span></label><input type="tel" id="odPhone" placeholder="0912 345 678"></div>
+    <div class="form-group"><label>Địa chỉ giao hàng <span style="color:var(--red-accent)">*</span></label><textarea id="odAddress" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành"></textarea></div>
+    <div class="form-group"><label>Ghi chú (không bắt buộc)</label><input type="text" id="odNote" placeholder="VD: giao giờ hành chính"></div>
+    <div class="order-error" id="odError"></div>
+    <button class="btn btn-red" id="odSubmit" style="width:100%;justify-content:center" onclick="submitOrder()"><span>Xác nhận đặt hàng</span></button>`;
+  document.getElementById('orderModal').classList.add('show');
+}
+function closeOrder() { document.getElementById('orderModal').classList.remove('show'); }
+
+async function submitOrder() {
+  const name = document.getElementById('odName').value.trim();
+  const phone = document.getElementById('odPhone').value.replace(/[\s.\-]/g, '');
+  const address = document.getElementById('odAddress').value.trim();
+  const note = document.getElementById('odNote').value.trim();
+  const err = document.getElementById('odError');
+  if (!name) { err.textContent = 'Vui lòng nhập họ tên.'; return; }
+  if (!/^(0|\+84)\d{9,10}$/.test(phone)) { err.textContent = 'Số điện thoại chưa đúng, vui lòng kiểm tra lại.'; return; }
+  if (address.length < 8) { err.textContent = 'Vui lòng nhập địa chỉ giao hàng đầy đủ.'; return; }
+  err.textContent = '';
+
+  const p = pdProduct;
+  const order = {
+    code: 'WRU' + String(Math.floor(10000 + Math.random() * 90000)),
+    product: p.name, category: CATEGORIES[p.cat].label, size: pdSize, qty: pdQty,
+    total: priceNum(p) * pdQty, name, phone, address, note, createdAt: new Date().toISOString()
+  };
+  const btn = document.getElementById('odSubmit');
+  btn.disabled = true; btn.firstElementChild.textContent = 'Đang gửi...';
+
+  let sent = false;
+  if (ORDER_ENDPOINT) {
+    try {
+      const r = await fetch(ORDER_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ _subject: 'Đơn hàng ' + order.code, ...order, chi_tiet: orderText(order) })
+      });
+      sent = r.ok;
+    } catch (e) { sent = false; }
+  }
+  saveOrder(order);
+  showOrderDone(order, sent);
+}
+
+function showOrderDone(o, sent) {
+  const text = orderText(o);
+  const mail = `mailto:${ORDER_EMAIL}?subject=${encodeURIComponent('Đơn hàng ' + o.code)}&body=${encodeURIComponent(text)}`;
+  document.getElementById('orderBody').innerHTML = sent ? `
+    <h2>Đặt hàng thành công 🎉</h2>
+    <p style="margin:0.5rem 0">Mã đơn của bạn:</p>
+    <div class="order-ok-code">${o.code}</div>
+    <p style="margin-top:0.8rem;color:#4a6a87">Shop đã nhận đơn và sẽ gọi xác nhận qua số <strong>${o.phone}</strong> sớm nhất. Bạn có thể dùng mã đơn để tra cứu ở mục "Đơn hàng".</p>
+    <button class="btn" style="width:100%;justify-content:center;margin-top:1.2rem" onclick="closeOrder(); showPage('samples')"><span>Tiếp tục xem mẫu</span></button>
+  ` : `
+    <h2>Đơn đã được ghi lại</h2>
+    <p style="margin:0.5rem 0">Mã đơn của bạn:</p>
+    <div class="order-ok-code">${o.code}</div>
+    <p style="margin-top:0.8rem;color:#4a6a87"><strong>Bước cuối:</strong> bấm nút bên dưới để gửi đơn đến shop qua Gmail. Nếu không mở được Gmail, hãy sao chép nội dung đơn và nhắn cho shop qua Instagram hoặc gọi <strong>0908 048 037</strong>.</p>
+    <div class="order-text" id="odText">${text.replace(/</g, '&lt;')}</div>
+    <a class="btn btn-red" style="width:100%;justify-content:center" href="${mail}"><span>Gửi đơn qua Gmail</span></a>
+    <div style="display:flex;gap:10px;margin-top:10px;flex-wrap:wrap">
+      <button class="btn btn-outline btn-small" style="flex:1;justify-content:center" onclick="copyOrder(this)"><span>Sao chép đơn</span></button>
+      <a class="btn btn-outline btn-small" style="flex:1;justify-content:center" href="${INSTAGRAM_URL}" target="_blank" rel="noopener"><span>Nhắn Instagram</span></a>
+    </div>`;
+}
+function copyOrder(btn) {
+  const t = document.getElementById('odText').textContent;
+  const done = () => { btn.firstElementChild.textContent = 'Đã sao chép ✓'; };
+  if (navigator.clipboard) navigator.clipboard.writeText(t).then(done, done); else done();
+}
+
+/* ============ LOOKBOOK ============ */
+const LOOKBOOK = [
+  { img: 'service2',   set: 'service', fit: 'cover',   tag: 'Nhóm / Lớp',  title: 'Áo đồng phục nhóm, lớp',  sub: 'Cả nhóm cùng một thiết kế, đặt từ 5 áo giảm 10%', go: "showPage('contact')" },
+  { img: 'tee2_back',  set: 'sample',  fit: 'contain', tag: 'Áo thun',     title: 'Lucky Walk',              sub: 'Mặt lưng in nhân vật hoạt hình', product: 'Lucky Walk' },
+  { img: 'service1',   set: 'service', fit: 'cover',   tag: 'Áo thun & polo', title: 'Thiết kế áo thun & polo', sub: 'Nhiều kiểu, nhiều màu để bạn chọn', go: "showPage('samples')" },
+  { img: 'hoodie',     set: 'sample',  fit: 'contain', tag: 'Hoodie',      title: 'Hoodie Sọc Trắng',        sub: 'Sọc trắng hai bên tay và viền mũ', product: 'Hoodie Sọc Trắng' },
+  { img: 'service3',   set: 'service', fit: 'cover',   tag: 'Doanh nghiệp', title: 'Quà tặng doanh nghiệp',  sub: 'Áo, túi, cốc in logo theo yêu cầu', go: "showPage('contact')" },
+  { img: 'longsleeve', set: 'sample',  fit: 'contain', tag: 'Áo tay dài',  title: 'Stay True',               sub: 'Trăng khuyết nhỏ trước ngực', product: 'Stay True' }
+];
+function renderLookbook() {
+  document.getElementById('lookbookGrid').innerHTML = LOOKBOOK.map(it => {
+    const src = (it.set === 'service' ? SERVICE_IMAGES : SAMPLE_IMAGES)[it.img];
+    const go = it.product ? `openProduct(PRODUCTS.findIndex(p => p.name === '${it.product}'))` : it.go;
+    return `
+      <div class="card shirt-card lb-card" onclick="${go}">
+        <img class="lb-img ${it.fit}" src="${src}" alt="${it.title}">
+        <div class="lb-body"><span class="badge">${it.tag}</span><h3>${it.title}</h3><p>${it.sub}</p></div>
+      </div>`;
+  }).join('');
+}
+
+/* ============ NAV ============ */
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById(pageId);
+  if (page) page.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  document.getElementById('header').style.setProperty('--scroll-progress', '0%');
+}
+
+/* ============ MODAL ============ */
+function openModal() { document.getElementById('loginModal').classList.add('show'); }
+function closeModal() { document.getElementById('loginModal').classList.remove('show'); }
+
+function login() {
+  const phone = document.getElementById('loginPhone').value.trim();
+  const pass = document.getElementById('loginPass').value.trim();
+  if (!phone || !pass) { alert('Vui lòng nhập số điện thoại và mật khẩu.'); return; }
+  currentUser = { phone: phone, points: 120 };
+  points = currentUser.points;
+  updateAuthArea();
+  closeModal();
+  alert(`Chào mừng ${phone}! Bạn có ${points} điểm tích lũy.`);
+  document.getElementById('loginPhone').value = '';
+  document.getElementById('loginPass').value = '';
+}
+
+function logout() {
+  currentUser = null;
+  points = 0;
+  updateAuthArea();
+}
+
+function updateAuthArea() {
+  const authDiv = document.getElementById('authArea');
+  if (currentUser) {
+    authDiv.innerHTML = `
+      <div class="user-info">
+        
+        <span>${currentUser.phone}</span>
+        <span class="points-badge">${points} điểm</span>
+        <a href="#" onclick="logout(); return false;" style="color: var(--red-accent); font-size: 0.8rem; margin-left: 4px;"></a>
+      </div>`;
+  } else {
+    authDiv.innerHTML = `<a href="#" class="login-btn" onclick="openModal(); return false;">Đăng nhập</a>`;
+  }
+}
+
+/* ============ PREVIEW 3D UPDATE ============ */
+function updateLivePreview() {
+  const text = document.getElementById('customText').value || 'WEARU';
+  const font = document.getElementById('fontSelect').value;
+  const color = document.getElementById('colorSelect').value;
+
+  const liveText = document.getElementById('liveText');
+
+  liveText.textContent = text;
+  liveText.style.fontFamily = font;
+
+  // Đổi màu áo
+  document.getElementById('shirtColor').style.background = color;
+
+  const isLight = color === '#f4f7fb' || color === '#ffffff';
+  liveText.style.color = isLight ? '#06182b' : '#ffffff';
+
+  // Cập nhật giá
+  let basePrice = 149000;
+  if (currentStyle === 'longsleeve') basePrice = 199000;
+  if (currentStyle === 'hoodie') basePrice = 249000;
+  const price = basePrice + text.length * 8000;
+  document.getElementById('livePrice').textContent = price.toLocaleString('vi-VN') + 'đ';
+}
+
+/* Đổi cỡ chữ */
+function changeTextSize(val) {
+  document.getElementById('liveText').style.fontSize = val + 'rem';
+}
+
+/* Style picker */
+document.querySelectorAll('.style-option').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.style-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    currentStyle = el.dataset.style;
+    renderShirt(currentStyle);
+    updateLivePreview();
+  });
+});
+
+/* Icon picker */
+document.querySelectorAll('.icon-option').forEach(el => {
+  el.addEventListener('click', () => {
+    document.querySelectorAll('.icon-option').forEach(o => o.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedIcon = el.dataset.icon;
+    updateLivePreview();
+  });
+});
+
+/* AI Design */
+function aiDesign() {
+  const fonts = [
+    "'Space Grotesk', sans-serif", 'Inter, sans-serif', 'Arial, sans-serif',
+    "'Courier New', monospace", 'Georgia, serif', "'Brush Script MT', cursive"
+  ];
+  const icons = ['fa-star', 'fa-heart', 'fa-bolt', 'fa-crown', 'fa-music', 'fa-fire'];
+  const texts = ['WEARU', 'OCEAN', 'RED VIBE', 'BLUE SOUL', 'STUDIO 25', 'TỰ TIN', 'WAVE', 'DREAM'];
+  const colors = ['#f4f7fb', '#0a5c9e', '#0a3d73', '#1c8ad8', '#d62839', '#1f1f1f'];
+  const randomFont = fonts[Math.floor(Math.random() * fonts.length)];
+  const randomIcon = icons[Math.floor(Math.random() * icons.length)];
+  const randomText = texts[Math.floor(Math.random() * texts.length)];
+  const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+  document.getElementById('fontSelect').value = randomFont;
+  document.getElementById('customText').value = randomText;
+  document.getElementById('colorSelect').value = randomColor;
+  document.querySelectorAll('.icon-option').forEach(o => o.classList.toggle('selected', o.dataset.icon === randomIcon));
+  selectedIcon = randomIcon;
+  updateLivePreview();
+
+  // Reset vị trí chữ về ngực áo khi AI tạo mới
+  const printArea = document.getElementById('printArea');
+  printArea.style.left = '50%';
+  printArea.style.top = PRINT_TOP[currentStyle] || '30%';
+  printArea.style.transform = 'translate(-50%, -50%)';
+
+  alert('🤖 AI đã tạo thiết kế mới cho bạn!');
+}
+
+/* ============ KÉO THẢ VÀ DI CHUYỂN CHỮ ============ */
+const printArea = document.getElementById('printArea');
+let isDragging = false;
+let startX, startY, startLeft, startTop;
+
+printArea.addEventListener('mousedown', (e) => {
+  if (e.target.closest('input')) return;
+  isDragging = true;
+  printArea.classList.add('dragging');
+  startX = e.clientX;
+  startY = e.clientY;
+
+  const rect = printArea.getBoundingClientRect();
+  const parentRect = printArea.parentElement.getBoundingClientRect();
+  startLeft = rect.left - parentRect.left;
+  startTop = rect.top - parentRect.top;
+
+  printArea.style.transform = 'none';
+  printArea.style.left = startLeft + 'px';
+  printArea.style.top = startTop + 'px';
+});
+
+window.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const dx = e.clientX - startX;
+  const dy = e.clientY - startY;
+  printArea.style.left = (startLeft + dx) + 'px';
+  printArea.style.top = (startTop + dy) + 'px';
+});
+
+window.addEventListener('mouseup', () => {
+  if (isDragging) {
+    isDragging = false;
+    printArea.classList.remove('dragging');
+  }
+});
+
+// Hỗ trợ cảm ứng trên mobile
+printArea.addEventListener('touchstart', (e) => {
+  if (e.target.closest('input')) return;
+  isDragging = true;
+  printArea.classList.add('dragging');
+  startX = e.touches[0].clientX;
+  startY = e.touches[0].clientY;
+
+  const rect = printArea.getBoundingClientRect();
+  const parentRect = printArea.parentElement.getBoundingClientRect();
+  startLeft = rect.left - parentRect.left;
+  startTop = rect.top - parentRect.top;
+
+  printArea.style.transform = 'none';
+  printArea.style.left = startLeft + 'px';
+  printArea.style.top = startTop + 'px';
+}, { passive: false });
+
+window.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  e.preventDefault();
+  const dx = e.touches[0].clientX - startX;
+  const dy = e.touches[0].clientY - startY;
+  printArea.style.left = (startLeft + dx) + 'px';
+  printArea.style.top = (startTop + dy) + 'px';
+}, { passive: false });
+
+window.addEventListener('touchend', () => {
+  if (isDragging) {
+    isDragging = false;
+    printArea.classList.remove('dragging');
+  }
+});
+
+/* ============ FAQ ============ */
+function toggleFaq(el) {
+  const item = el.parentElement;
+  document.querySelectorAll('.faq-item').forEach(i => { if (i !== item) i.classList.remove('open'); });
+  item.classList.toggle('open');
+}
+
+/* ============ CONTACT ============ */
+function submitContact() {
+  const name = document.getElementById('contactName').value.trim();
+  const phone = document.getElementById('contactPhone').value.trim();
+  const type = document.getElementById('contactType').value;
+  const note = document.getElementById('contactNote').value.trim();
+  if (!phone) { alert('Vui lòng nhập số điện thoại!'); return; }
+  document.getElementById('contactMsg').innerHTML = `✅ Đã gửi! Shop sẽ liên hệ ${phone} trong 15 phút.`;
+  document.getElementById('contactName').value = '';
+  document.getElementById('contactPhone').value = '';
+  document.getElementById('contactNote').value = '';
+  if (currentUser) {
+    points += 10;
+    currentUser.points = points;
+    updateAuthArea();
+  }
+}
+
+/* ============ TRACK ORDER ============ */
+function trackOrder() {
+  const code = document.getElementById('orderCode').value.trim().toUpperCase();
+  if (!code) { alert('Vui lòng nhập mã đơn hàng!'); return; }
+  const o = getOrders().find(x => x.code === code);
+  const steps = document.getElementById('trackSteps');
+  const result = document.getElementById('trackResult');
+  if (!o) {
+    steps.style.display = 'none';
+    result.textContent = 'Không tìm thấy mã đơn này trên thiết bị. Vui lòng kiểm tra lại mã hoặc liên hệ shop.';
+    return;
+  }
+  result.textContent = `Đơn ${o.code}: ${o.product} · size ${o.size} · SL ${o.qty} · ${money(o.total)}`;
+  steps.style.display = 'flex';
+  steps.style.flexDirection = 'column';
+}
+
+/* ============ 3D SHIRT DRAG ============ */
+function enable3DDrag(el) {
+  let isDown = false, startX = 0, startY = 0, rotY = 0, rotX = 0, currentRotY = 0, currentRotX = 0;
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.closest('.print-area')) return;
+    isDown = true;
+    startX = e.clientX;
+    startY = e.clientY;
+    el.style.animation = 'none';
+    el.style.transition = 'none';
+  });
+
+  window.addEventListener('mousemove', e => {
+    if (!isDown) return;
+    const dx = e.clientX - startX;
+    const dy = e.clientY - startY;
+    rotY = currentRotY + dx * 0.5;
+    rotX = currentRotX - dy * 0.5;
+    el.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+  });
+
+  window.addEventListener('mouseup', () => {
+    if (!isDown) return;
+    isDown = false;
+    currentRotY = rotY;
+    currentRotX = rotX;
+    el.style.transition = 'transform 0.3s ease';
+  });
+
+  el.addEventListener('touchstart', e => {
+    if (e.target.closest('.print-area')) return;
+    isDown = true;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    el.style.animation = 'none';
+    el.style.transition = 'none';
+  }, { passive: true });
+
+  window.addEventListener('touchmove', e => {
+    if (!isDown) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    rotY = currentRotY + dx * 0.5;
+    rotX = currentRotX - dy * 0.5;
+    el.style.transform = `rotateY(${rotY}deg) rotateX(${rotX}deg)`;
+  }, { passive: true });
+
+  window.addEventListener('touchend', () => {
+    if (!isDown) return;
+    isDown = false;
+    currentRotY = rotY;
+    currentRotX = rotX;
+    el.style.transition = 'transform 0.3s ease';
+  });
+}
+
+/* ============ SCROLL PROGRESS ============ */
+window.addEventListener('scroll', () => {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  document.getElementById('header').style.setProperty('--scroll-progress', progress + '%');
+});
+
+/* ============ INIT ============ */
+window.addEventListener('load', async () => {
+  await shirtsReady;   // đợi tách xong hình dáng áo
+  updateAuthArea();
+
+  // Dựng trang Mẫu shop (chia theo loại áo) và Lookbook
+  renderShop();
+  renderLookbook();
+
+  // Ảnh các dịch vụ
+  document.querySelectorAll('[data-service]').forEach(img => { img.src = SERVICE_IMAGES[img.dataset.service]; });
+
+  // Áo thun trơn ở trang giới thiệu (dùng ảnh áo thật, tô màu xanh)
+  const teeImg = 'url(' + SHIRT_IMAGES.tshirt + ')';
+  const teeColor = document.getElementById('heroTeeColor');
+  teeColor.style.webkitMaskImage = teeImg;
+  teeColor.style.maskImage = teeImg;
+  document.getElementById('heroTeeShade').style.backgroundImage = teeImg;
+
+  // Render áo mặc định (áo thun)
+  renderShirt('tshirt');
+  updateLivePreview();
+
+  enable3DDrag(document.getElementById('heroShirt'));
+  enable3DDrag(document.getElementById('liveShirt'));
+
+  document.getElementById('customText').addEventListener('input', updateLivePreview);
+  document.getElementById('fontSelect').addEventListener('change', updateLivePreview);
+  document.getElementById('colorSelect').addEventListener('change', updateLivePreview);
+});
+
+window.addEventListener('click', e => {
+  if (e.target === document.getElementById('orderModal')) closeOrder();
+  const modal = document.getElementById('loginModal');
+  if (e.target === modal) closeModal();
+});
